@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.css" rel="stylesheet" />
+		<link href="../css/header.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<!-- 头部标题栏 -->
+		<header class="mui-bar mui-bar-nav title">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left" style="color: black"></a>
+			<!-- 更多选项 -->
+			<a class=" mui-icon mui-icon-right-nav mui-pull-right" style="color: black" id="openMenu">...</a>
+			
+			<h1 class="mui-title title-color">个人头像</h1>
+		</header>
+		<!-- 主体 -->
+		<div class="mui-content">
+			<img id="img_profile" src="../css/registLogin/default_image.png" />
+		</div>
+		<div id="sheet_profile" class="mui-popover mui-popover-bottom mui-popover-action ">
+			<!-- 可选择菜单 -->
+			<ul class="mui-table-view">
+			  <li class="mui-table-view-cell">
+				<a id="link_chooseProfile" href="#">选择图片</a>
+			  </li>
+			  <li class="mui-table-view-cell">
+				<a id="link_saveProfile" href="#">保存头像</a>
+			  </li>
+			</ul>
+			<!-- 取消菜单 -->
+			<ul class="mui-table-view">
+			  <li class="mui-table-view-cell">
+				<a href="#sheet_profile"><b>取消</b></a>
+			  </li>
+			</ul>
+		</div>
+		
+		<script src="../js/mui.js"></script>
+		<script src="../js/app.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			mui.plusReady(function(){
+				var user = app.getUserGlobalInfo();
+				var img_profile = document.getElementById("img_profile")
+				if(user != null){
+					var faceImageBig = user.faceImageBig
+					if(app.isNotNull(faceImageBig)){
+						img_profile.src=app.ImgServerUrl + faceImageBig
+					}
+				}
+				//设置图片宽度和高度
+				var image_width = document.body.clientWidth  //客户端的宽度
+				img_profile.width = image_width
+				img_profile.height = image_width
+				
+				//个人头像菜单按钮设置
+				document.getElementById("openMenu").addEventListener("tap",function(){
+					mui("#sheet_profile").popover("toggle");
+				})
+				
+				//选择图片
+				document.getElementById("link_chooseProfile").addEventListener("tap",function(){
+					mui.openWindow("profile_uploader.html","profile_uploader.html")
+					mui("#sheet_profile").popover("toggle")
+				})
+				
+				//保存图像
+				var link_saveProfile = document.getElementById("link_saveProfile")
+				link_saveProfile.addEventListener("tap",function(){
+					
+					plus.nativeUI.showWaiting("正在下载......")
+					
+					var user = app.getUserGlobalInfo()
+					var faceImageBig = user.faceImageBig
+					
+					var dtast = plus.downloader.createDownload(
+						app.ImgServerUrl + faceImageBig,
+						{},
+						function(downloadFile,status){
+							plus.nativeUI.closeWaiting()
+							
+							if(status == 200){
+								var tempFile = downloadFile.filename
+								
+								//通过相册api保存到本地相册
+								plus.gallery.save(tempFile,function(){
+									app.showToast("保存图片成功！","success")
+								})
+							}else{
+								app.showToast("下载时发生错误！","error")
+								console.log("下载错误")
+							}
+							
+						}
+					)
+					dtast.start()
+				})
+			})
+		</script>
+	</body>
+
+</html>

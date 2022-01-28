@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title></title>
+    <link href="../css/mui.css" rel="stylesheet"/>
+	 <link href="../css/header.css" rel="stylesheet"/>
+</head>
+<body>
+	<!--标题栏 -->
+	<header class="mui-bar mui-bar-nav title">
+		<h1 class="mui-title title-color">Wayne Chat</h1>
+	</header>
+	
+	<!--主体部分 -->
+	<div class="mui-content">
+		hello!!
+	</div>
+	
+	<!-- 底部选项卡 -->
+	<nav class="mui-bar mui-bar-tab">
+		<a class="mui-tab-item mui-active" tabindex="0" >
+			<span class="mui-icon mui-icon-chatbubble"></span>
+			<span class="mui-tab-label">Wayne Chat</span>
+		</a>
+		<a class="mui-tab-item" tabindex="1">
+			<span class="mui-icon mui-icon-contact"></span>
+			<span class="mui-tab-label">通讯录</span>
+		</a>
+		<a class="mui-tab-item" tabindex="2">
+			<span class="mui-icon mui-icon-pengyouquan"></span>
+			<span class="mui-tab-label">发现</span>
+		</a>
+		<a class="mui-tab-item" tabindex="3">
+			<span class="mui-icon mui-icon-person"></span>
+			<span class="mui-tab-label">我</span>
+		</a>
+	</nav>
+	
+	<script src="../js/mui.js"></script>
+	<script type="text/javascript">
+		mui.init()
+		
+		//定义用于存储选项卡页面的数组
+		var subPages = [
+			{
+				pageID: "wayne_chat_list.html",
+				pageURL: "wayne_chat_list.html"
+			},
+			{
+				pageID: "wayne_chat_Contact.html",
+				pageURL: "wayne_chat_Contact.html"
+			},
+			{
+				pageID: "wayne_chat_Discover.html",
+				pageURL: "wayne_chat_Discover.html"
+			},
+			{
+				pageID: "wayne_chat_person.html",
+				pageURL: "wayne_chat_person.html"
+			},
+		];
+		
+		//设置页面打开的样式
+		var pageStyle= {
+			top: "0px",
+			bottom: "50px"
+		};
+		
+		
+		mui.plusReady(function(){
+			//设置系统状态栏背景颜色
+			plus.navigator.setStatusBarBackground("#F2F2F2")
+			//设置系统字体颜色
+			plus.navigator.setStatusBarStyle("dark")
+			
+			//选项卡
+			//获取当前webview对象
+			var indexWebView = plus.webview.currentWebview();
+			//将数组中的页面循环向当前主页webView追加子页的4个webview对象
+			for(var i = 0;i<subPages.length; i++){
+				//将每次循环产生的页面信息进行创建为webview窗口对象
+				var wv = plus.webview.create(subPages[i].pageURL,subPages[i].pageID,pageStyle)
+				//进行隐藏，不立刻展示
+				wv.hide()
+				//追加子窗口对象至主窗口
+				indexWebView.append(wv)
+			}
+			//设置默认窗口
+			plus.webview.show(subPages[0].pageID)
+			//批量绑定tap事件
+			mui(".mui-bar-tab").on("tap","a",function(){
+				//获取被触摸的a标签的索引
+				var tabindex = this.getAttribute("tabindex")
+				//显示点击的tab选项卡绑定的页面
+				plus.webview.show(subPages[tabindex].pageID,"fade-in",100)
+				//隐藏不需要的页面
+				for(var i = 0;i< subPages.length; i++){
+					if(i != tabindex){
+						plus.webview.hide(subPages[i].pageID,"fade-out",100)
+					}
+				}
+			})
+		})
+	</script>
+</body>
+</html>

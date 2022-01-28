@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.css" rel="stylesheet" />
+		<link href="../css/header.css" rel="stylesheet" />
+	</head>
+	
+	<body>
+		<header class="mui-bar mui-bar-nav title">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title title-color">选择图片</h1>
+		</header>
+		
+		
+		<div class="mui-content">
+			<img id="img_profile" src="../css/registLogin/default_image.png" width="60"/>
+			<div style="text-align: center; margin-top: 25px;">
+				<button id="submit_button" type="button" class="mui-btn mui-btn-block" style=" background-color: #2ba245;color: white;width: 80%;display: inline;padding: 8px 0;">提交图片</button>
+			</div>
+		</div>
+		
+		
+		<script src="../js/app.js"></script>
+		<script src="../js/mui.js"></script>
+		<script src="../node_modules/image-tools/index.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			mui.plusReady(function(){
+				
+				var user = app.getUserGlobalInfo()
+				
+				var ProfileBase64 = ""
+				
+				var img_profile = document.getElementById("img_profile")
+				
+				
+				//修改图片大小，根据客户端手机屏幕调整
+				var imgWidth = document.body.clientWidth 
+				img_profile.width = imgWidth
+				img_profile.height = imgWidth
+				
+				
+				//打开相册选择图片
+				//paths 图片在手机本地的绝对路径
+				//file.name 图片的名称
+				console.log("从相册中选择图片:")
+				plus.gallery.pick(function(path){
+					plus.io.resolveLocalFileSystemURL(path,function(entry){
+						entry.file(function(file){
+							var paths = entry.toLocalURL()
+							
+							reader = new plus.io.FileReader();
+							reader.onloadend = function ( e ) {
+								console.log( "Read success" );
+									// Get data
+								ProfileBase64 = e.target.result;
+								console.log( ProfileBase64 );
+								};
+							reader.readAsDataURL(file);
+							img_profile.src = paths
+							
+						})
+					},function(e) {
+                        plus.nativeUI.toast("读取照片文件错误：" + e.message);
+                        })
+				    }, function ( e ) {
+				    	console.log( "取消选择图片" );
+				    }, {filter:"image"});
+					
+				//点击按钮上传图片
+				var submit_button = document.getElementById("submit_button")
+				submit_button.addEventListener("tap",function(){
+					if(app.isNotNull(ProfileBase64)){
+						var user = app.getUserGlobalInfo()
+						console.log(user.id)
+						mui.ajax(app.serverUrl + "user/uploadFaceBase64",{
+							data:{
+								userId:user.id,
+								ProfileData:ProfileBase64
+							},
+							type:'post',//HTTP请求类型
+							timeout:10000,//超时时间设置为10秒；
+							headers:{'Content-Type':'application/json'},
+							success:function(data){
+								
+								if (data.status == 200) {
+									var userInfo = data.data;
+									app.setUserGlobalInfo(userInfo);
+									
+									var person_webview = plus.webview.getWebviewById("wayne_chat_person.html")
+									mui.fire(person_webview, "refresh");
+									
+									// 触发另外一个webview的自定义事件，可以使用 mui.fire()
+									var myfaceWebview = plus.webview.getWebviewById("myprofile.html");
+									mui.fire(myfaceWebview, "refresh");
+									// 页面跳转
+									mui.openWindow("index.html", "index");
+								}else{
+									app.showToast(data.msg, "error");
+								}
+							},
+							error:function(XMLHttpRequest, textStatus, errorThrown){
+								if(textStatus=="timeout"){
+									app.showToast("连接超时","error");//超过十秒报错
+								}else if(textStatus=="error"){
+									app.showToast("连接出错","error" );
+								}
+							}
+						})
+					}else{
+						console.log("未成功选择图片！")
+					}
+				})
+				//base64编码  
+				function getBase64Image(img) {
+				    var canvas = document.createElement("canvas");   //创建canvas DOM元素，并设置其宽高和图片一样
+				    canvas.width = img.width;
+				    canvas.height = img.height;
+				    var ctx = canvas.getContext("2d");
+				    ctx.drawImage(img, 0, 0, img.width, img.height); //使用画布画图
+				    var ext = img.src.substring(img.src.lastIndexOf(".") + 1).toLowerCase();  //动态截取图片的格式
+				    var dataURL = canvas.toDataURL("image/" + ext);  //返回的是一串Base64编码的URL并指定格式
+				    return dataURL;
+				}
+			})
+			
+		</script>
+	</body>
+
+</html>

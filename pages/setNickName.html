@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.css" rel="stylesheet" />
+		<link href="../css/header.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		
+		<header class="mui-bar mui-bar-nav title">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left title-color"></a>
+			<a id="link_submit_nickname" class="mui-icon mui-icon-right-nav mui-pull-right title-color" style="font-size:16px;line-height: 24px;">完成</a>
+			<h1 class="mui-title">设置昵称</h1>
+		</header>
+		
+		<!-- 主体部分 -->
+		<div class="mui-content">
+			<div class="mui-input-row">
+				<input id="txt_nickname" type="text" class=" mui-input-clear" placeholder="修改昵称" />
+			</div>
+		</div>
+		
+		<script src="../js/mui.js"></script>
+		<script src="../js/app.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			mui.plusReady(function(){
+				var user = app.getUserGlobalInfo()
+				var nickname = user.nickname
+				
+				//获取修改昵称的文本框对象
+				var txt_nickname = document.getElementById("txt_nickname")
+				txt_nickname.value = nickname
+				
+				var link_submit_nickname = document.getElementById("link_submit_nickname")
+				link_submit_nickname.addEventListener("tap",function(){
+					var newNickName = txt_nickname.value
+					if(!app.isNotNull(newNickName)){
+						app.showToast("新昵称不能为空","error")
+						return false
+					}
+					if(newNickName.length > 10){
+						app.showToast("新昵称不能超过10位","error")
+						return false
+					}
+					plus.nativeUI.showWaiting("修改昵称...")
+					mui.ajax(app.serverUrl+"user/setNickname",{
+						data:{
+							id:user.id,
+							nickname:newNickName
+						},
+						type:'post',
+						timeout:10000,
+						success:function(data){
+							console.info(JSON.stringify(data));
+							plus.nativeUI.closeWaiting();
+							if(data.status == 200){
+								var userInfoJson = data.data
+								console.log(userInfoJson)
+								//将更新以后的用户信息保存到本地
+								app.setUserGlobalInfo(userInfoJson)
+								
+								//触发另外一个webview的自定义事件，更新最新用户信息
+								var mywebview = plus.webview.getWebviewById("wayne_chat_person.html");
+								mui.fire(mywebview,"refresh");
+								//页面跳转
+								mui.back();
+							}else{
+								app.showToast(data.msg,"error")
+							}
+						},
+						error:function(XMLHttpRequest, textStatus, errorThrown){
+							if(textStatus=="timeout"){
+								mui.toast("连接超时");//超过十秒报错
+							}else if(textStatus=="error"){
+								mui.toast("连接出错");
+							}
+						}
+					})
+					
+				})
+				
+			})
+		</script>
+	</body>
+
+</html>

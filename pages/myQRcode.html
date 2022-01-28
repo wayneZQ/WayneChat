@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.css" rel="stylesheet" />
+		<link href="../css/header.css" rel="stylesheet" />
+		<style type="text/css">
+			#mui-content{
+				width:100%;
+				position: absolute;
+				top:44px;
+				padding: 80px 30px 0px 30px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav title">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left title-color"></a>
+			<a id="link_dowanload_qrcode" class="mui-pull-right title-color" style="line-height: 42px; margin-top: 10px;">
+				<img src="../images/download.png" width="23px" height="23px" />
+			</a>
+			<h1 class="mui-title title-color">我的二维码</h1>
+		</header>
+		<div id="mui-content">
+			<div style="background-color: white; padding-top: 20px; padding-left: 20px;">
+				<img id="img_profile" src="../css/registLogin/default_image.png" width="60" style="border-radius: 8%; float:left"/>
+				<label id="lable_nickname" style=" margin-left: 10px; margin-top:15px; float: left;">default name</label>
+			</div>
+			<div style="background-color: white; text-align: center;">
+				<img id="img_my_qrcode" src="../images/qrcode.png" width="100%" style="padding: 20px 10px;" />
+			</div>
+			<div style="background-color: white; text-align: center;">
+				<p style="padding-bottom: 10px; font-size: 12px;">扫一扫加好友</p>
+			</div>
+		</div>
+		
+		
+		<script src="../js/mui.js"></script>
+		<script src="../js/app.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			mui.plusReady(function () {
+			    //获取全局用户对象
+				var user = app.getUserGlobalInfo()
+				var qrcode = user.qrcode
+				var faceImageBig = user.faceImageBig
+				var nickname = user.nickname
+				
+				var img_profile = document.getElementById("img_profile")
+				if(app.isNotNull(faceImageBig)){
+					img_profile.src = app.ImgServerUrl + faceImageBig
+				}
+				
+				var img_my_qrcode = document.getElementById("img_my_qrcode")
+				if(app.isNotNull(qrcode)){
+					img_my_qrcode.src = app.ImgServerUrl + qrcode
+				}
+				
+				var lable_nickname = document.getElementById("lable_nickname")
+				if(app.isNotNull(nickname)){
+					lable_nickname.innerHTML = nickname
+				}
+				
+				//获取手机端可见屏幕的高度
+				var imgWidth = document.body.clientWidth - 60
+				img_my_qrcode.width = imgWidth
+				img_my_qrcode.height = imgWidth
+				
+				//下载保存二维码
+				var link_dowanload_qrcode = document.getElementById("link_dowanload_qrcode")
+				link_dowanload_qrcode.addEventListener("tap",function(){
+					plus.nativeUI.showWaiting("下载中...")
+					var download = plus.downloader.createDownload(
+						app.ImgServerUrl + qrcode,
+						{},
+						function(d,status){
+							if(status == 200){
+								console.log(d.fileName +" 下载成功")
+								plus.nativeUI.closeWaiting()
+								
+								//保存到系统相册当中
+								plus.gallery.save(d.filename,function(){
+									app.showToast("成功保存二维码到相册中","success")
+								})
+							}else{
+								console.log("下载失败 "+status)
+								plus.nativeUI.closeWaiting()
+								app.showToast("保存二维码到相册失败","error")
+							}
+						}
+					)
+					download.start()
+				})
+			})
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../css/mui.css" rel="stylesheet" />
+		<link href="../css/header.css" rel="stylesheet" />
+		<style type="text/css">
+			.mui-content{
+				height: 100%;
+				overflow: auto;
+			}
+		</style>
+	</head>
+
+	<body>
+		<!-- 头部标题栏 -->
+		<header class="mui-bar mui-bar-nav title">
+			<h1 class="mui-title title-color">Wayne Chat聊天</h1>
+		</header>
+		<!-- 主体 -->
+		<div class="mui-content">
+			<ul class="mui-table-view" id="ul_friend_request_list" style="margin-bottom: 10px;">
+				<!-- <li class="mui-table-view-cell mui-media">
+					<a href="javascript:;">
+						<img class="mui-media-object mui-pull-left" src="../css/registLogin/default_image.png">
+						<span class="mui-pull-right">
+							<button type="button" friendID="" class="ignoreRequest mui-btn mui-btn-grey" style="padding: 5px 10px; margin-right: 5px;">拒绝</button>
+							<button type="button" friendID="" class="passRequest mui-btn mui-btn-green" style="padding: 5px 10px; background-color: #2ba245;">同意</button>
+						</span>
+						<div class="mui-media-body">
+							<label>request_nickname</label>
+							<p class="mui-ellipsis">请求添加你为好友</p>
+						</div>
+					</a>
+				</li> -->
+			</ul>
+		</div>
+		
+		
+		<script src="../js/mui.js"></script>
+		<script src="../js/app.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			mui.plusReady(function(){
+				//加载好友请求
+				var user = app.getUserGlobalInfo()
+				var thisWebView = plus.webview.currentWebview()
+				thisWebView.addEventListener("show",function(){
+					loadingFriendRequest(user)
+				})
+			})
+			
+			function loadingFriendRequest(user){
+				mui.ajax(app.serverUrl+"user/queryFriendRequest?userId="+user.id,{
+					dataType: 'json',
+					type:'post',
+					timeout:10000,
+					success:function(data){
+						if(data.status == 200){
+							// console.log(JSON.stringify(data.data))
+							// console.log(user.id)
+							var friendRequestList = data.data;
+							var ul_friend_request_list = document.getElementById("ul_friend_request_list");
+							if(friendRequestList != null && friendRequestList.length>0){
+								//用于存储好友列表字符串拼接
+								var requestFriendHtml = ""
+								//遍历好友请求列表
+								for(var i=0;i<friendRequestList.length;i++){
+									requestFriendHtml += renderFriendRequest(friendRequestList[i])
+								}
+								//将拼接好的好友字符串嵌入到ul对象
+								ul_friend_request_list.innerHTML = requestFriendHtml
+								
+								mui(".btn-operator").on("tap",".ignoreRequest",function(){
+									//获取发送请求者的ID
+									var friendID = this.getAttribute("friendID")
+									//拒绝
+									operateFriendRequest(user.id,friendID,0)					
+								})
+								mui(".btn-operator").on("tap",".passRequest",function(){
+									//获取发送请求者的ID
+									var friendID = this.getAttribute("friendID")
+									//同意
+									operateFriendRequest(user.id,friendID,1)
+								})
+							}
+						}else{
+							console.log("show friend request error!")
+							ul_friend_request_list.innerHTML="";
+						}
+					}
+				})
+			}
+			
+			//用户拼接好友列表信息的字符串函数
+			function renderFriendRequest(friend){
+				var html = ""
+				html = '<li class="btn-operator mui-table-view-cell mui-media">'+
+					'<a href="javascript:;">'+
+						'<img class="mui-media-object mui-pull-left" src="'+app.ImgServerUrl+friend.sendUserFaceImage+'">'+
+						'<span class="mui-pull-right">'+
+							'<button type="button" friendID="'+friend.sendUserID+'" class="ignoreRequest mui-btn mui-btn-grey" style="padding: 5px 10px; margin-right: 5px;">拒绝</button>'+
+							'<button type="button" friendID="'+friend.sendUserID+'" class="passRequest mui-btn mui-btn-green" style="padding: 5px 10px; background-color: #2ba245;">同意</button>'+
+						'</span>'+
+						'<div class="mui-media-body">'+
+							'<label>'+friend.sendUserNickname+'</label>'+
+							'<p class="mui-ellipsis">请求添加你为好友</p>'+
+						'</div>'+
+					'</a>'+
+				'</li>';
+				return html
+			}
+			/**
+			 * 处理好友请求
+			 * @param {Object} userId 接收好友请求的用户ID
+			 * @param {Object} friendId 发送好友请求的用户ID
+			 * @param {Object} operatorType 操作结果类型
+			 */
+			function operateFriendRequest(userId,friendId,operatorType){
+				mui.ajax(app.serverUrl+"user/operateFriendRequest?acceptUserId="+userId+"&sendUserId="+friendId+"&operatorType="+operatorType,{
+					dataType: 'json',
+					type:'post',
+					timeout:10000,
+					success:function(data){
+						//更新通讯录
+						myFriendsList = data.data
+						app.setContactList(myFriendsList)
+						//重新加载好友请求记录
+						loadingFriendRequest()
+					}
+				})
+			}
+		</script>
+	</body>
+
+</html>
