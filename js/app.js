@@ -49,5 +49,12 @@ window.app = {
 	 */
 	userLogout:function(){
 		plus.storage.removeItem("userInfo")
-	}
+	},
+	/**
+	 * 保存用户的联系人列表
+	 */
+	setContactList:function(MyFriendList){
+		var contactListStr = JSON.stringify(MyFriendList)
+		plus.storage.setItem("contactList",contactListStr)
+	},
 }

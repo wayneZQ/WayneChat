@@ -60,8 +60,7 @@
 					timeout:10000,
 					success:function(data){
 						if(data.status == 200){
-							// console.log(JSON.stringify(data.data))
-							// console.log(user.id)
+							console.log(JSON.stringify(data.data))
 							var friendRequestList = data.data;
 							var ul_friend_request_list = document.getElementById("ul_friend_request_list");
 							if(friendRequestList != null && friendRequestList.length>0){
@@ -78,14 +77,23 @@
 									//获取发送请求者的ID
 									var friendID = this.getAttribute("friendID")
 									//拒绝
-									operateFriendRequest(user.id,friendID,0)					
+									operateFriendRequest(user.id,friendID,0)
+									app.showToast("已拒绝","success")
+									loadingFriendRequest(user)
+									//刷新当前页面
+									window.location.reload()
 								})
 								mui(".btn-operator").on("tap",".passRequest",function(){
 									//获取发送请求者的ID
 									var friendID = this.getAttribute("friendID")
 									//同意
 									operateFriendRequest(user.id,friendID,1)
+									app.showToast("已同意","success")
+									loadingFriendRequest(user)
+									//刷新当前页面
+									window.location.reload()
 								})
+								
 							}
 						}else{
 							console.log("show friend request error!")
@@ -103,7 +111,7 @@
 						'<img class="mui-media-object mui-pull-left" src="'+app.ImgServerUrl+friend.sendUserFaceImage+'">'+
 						'<span class="mui-pull-right">'+
 							'<button type="button" friendID="'+friend.sendUserID+'" class="ignoreRequest mui-btn mui-btn-grey" style="padding: 5px 10px; margin-right: 5px;">拒绝</button>'+
-							'<button type="button" friendID="'+friend.sendUserID+'" class="passRequest mui-btn mui-btn-green" style="padding: 5px 10px; background-color: #2ba245;">同意</button>'+
+				 			'<button type="button" friendID="'+friend.sendUserID+'" class="passRequest mui-btn mui-btn-green" style="padding: 5px 10px; background-color: #2ba245;">同意</button>'+
 						'</span>'+
 						'<div class="mui-media-body">'+
 							'<label>'+friend.sendUserNickname+'</label>'+
@@ -128,8 +136,6 @@
 						//更新通讯录
 						myFriendsList = data.data
 						app.setContactList(myFriendsList)
-						//重新加载好友请求记录
-						loadingFriendRequest()
 					}
 				})
 			}
