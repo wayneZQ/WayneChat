@@ -76,8 +76,14 @@
 				var currentWebView=plus.webview.currentWebview();
 				currentWebView.addEventListener("show",function(){
 					//刷新当前用户信息
-					refreshUserInfo()
+					refreshUserInfo();
 				})
+				
+				//添加自定义事件
+				window.addEventListener("refresh",function(){
+					refreshUserInfo();
+				});
+				
 				//设置头像
 				var link_profile = document.getElementById("link_profile")
 				link_profile.addEventListener("tap",function(){

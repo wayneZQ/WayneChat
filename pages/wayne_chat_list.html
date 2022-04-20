@@ -51,8 +51,18 @@
 				thisWebView.addEventListener("show",function(){
 					loadingFriendRequest(user)
 				})
+				
+				//刷新好友请求
+				window.addEventListener("refresh",function(){
+					loadingFriendRequest(user)
+				});
 			})
 			
+			
+			/**
+			 * 加载好友请求列表
+			 * @param {Object} user
+			 */
 			function loadingFriendRequest(user){
 				mui.ajax(app.serverUrl+"user/queryFriendRequest?userId="+user.id,{
 					dataType: 'json',
@@ -94,14 +104,14 @@
 									window.location.reload()
 								})
 								
-							}
-						}else{
-							console.log("show friend request error!")
-							ul_friend_request_list.innerHTML="";
-						}
-					}
-				})
+							}else{
+							console.log("no friends request!")
+							ul_friend_request_list.innerHTML="";		
+						}	
 			}
+		},
+	})
+	}
 			
 			//用户拼接好友列表信息的字符串函数
 			function renderFriendRequest(friend){

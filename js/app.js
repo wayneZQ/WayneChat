@@ -3,7 +3,7 @@ window.app = {
 	/**
 	 * 后端服务器发布地址
 	 */
-	serverUrl: "http://10.11.75.105:8080/im_bird_sys/",
+	serverUrl: "http://192.168.1.103:8080/im_bird_sys/",
 	/**
 	 * 图片服务器地址
 	 */
@@ -57,4 +57,16 @@ window.app = {
 		var contactListStr = JSON.stringify(MyFriendList)
 		plus.storage.setItem("contactList",contactListStr)
 	},
+	
+	/**
+	 * 获取本地缓存中的联系人列表
+	 */
+	getContactList: function(){
+		var contractListStr = plus.storage.getItem("contactList");
+		// 为空，没有联系人
+		if(!this.isNotNull(contractListStr)){
+			return [];
+		}
+		return JSON.parse(contractListStr);
+	}
 }
